@@ -37,6 +37,8 @@ from functools import partial
 from email.parser import FeedParser
 from email import message_from_string
 
+from scrape_licenses import find_all_license_files
+
 try:
     from pip._internal.utils.misc import get_installed_distributions
 except ImportError:
@@ -112,7 +114,7 @@ LICENSE_UNKNOWN = 'UNKNOWN'
 
 def get_packages(args):
 
-    def get_pkg_license_file(pkg):
+    def get_pkg_license_file(pkg, pkg_info=None):
         """
         Attempt to find the package's LICENSE file on disk and return the
         tuple (license_file_path, license_file_contents).
@@ -137,16 +139,30 @@ def get_packages(args):
                     license_text = "".join([line.decode('utf-8', 'replace')
                                             for line in file_lines])
                 break
+
+        else:
+            if getattr(args, 'scrape') and pkg_info is not None:
+                field = 'URL'
+                if field.lower() in pkg_info:
+                    url = pkg_info[field.lower()]
+                else:
+                    url = pkg_info[FIELDS_TO_METADATA_KEYS[field]]
+
+                for license_scraped_text, license_scraped_path in \
+                        find_all_license_files(url, pkg_info['name']):
+                    license_text = license_scraped_text
+                    license_file = license_scraped_path
+
         return (license_file, license_text)
 
     def get_pkg_info(pkg):
-        (license_file, license_text) = get_pkg_license_file(pkg)
+
         pkg_info = {
             'name': pkg.project_name,
             'version': pkg.version,
             'namever': str(pkg),
-            'licensefile': license_file,
-            'licensetext': license_text,
+            'licensefile': LICENSE_UNKNOWN,
+            'licensetext': LICENSE_UNKNOWN,
         }
         metadata = None
         if pkg.has_metadata('METADATA'):
@@ -167,6 +183,10 @@ def get_packages(args):
 
         for key in METADATA_KEYS:
             pkg_info[key] = parsed_metadata.get(key, LICENSE_UNKNOWN)
+
+        license_file, license_text = get_pkg_license_file(pkg, pkg_info=pkg_info)
+        pkg_info['licensefile'] = license_file
+        pkg_info['licensetext'] = license_text
 
         from_source = getattr(args, 'from')
         need_classifier = from_source == 'classifier' or from_source == 'mixed'
@@ -574,6 +594,11 @@ def create_parser():
                         default=False,
                         help='dump with location of license file and '
                              'contents, most useful with JSON output')
+    parser.add_argument('-S', '--scrape',
+                        action='store_true',
+                        default=False,
+                        help='Scrape licenses from GitHub if they were not found and')
+
     parser.add_argument('-i', '--ignore-packages',
                         action='store', type=str,
                         nargs='+', metavar='PKG',

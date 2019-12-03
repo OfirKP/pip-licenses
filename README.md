@@ -17,6 +17,7 @@ Dump the software license list of Python packages installed with pip.
     * [Option: with\-urls](#option-with-urls)
     * [Option: with\-description](#option-with-description)
     * [Option: with\-license\-file](#option-with-license-file)
+    * [Option: scrape](#option-scrape)
     * [Option: ignore\-packages](#option-ignore-packages)
     * [Option: order](#option-order)
     * [Option: format](#option-format)
@@ -164,6 +165,10 @@ When executed with the `--with-description` option, output with short descriptio
 
 When executed with the `--with-license-file` option, output the location of the package's license file on disk and the full contents of that file. Due to the length of these fields, this option is best paired with `--format=json`.
 
+### Option: scrape
+
+When executed with the `--scrape` option, try to scrape and download license files from GitHub links in the packages provided URLs.
+To view the contents of the license files, this option is best paired with `--with-license-file`.
 
 ### Option: ignore-packages
 
