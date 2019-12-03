@@ -118,7 +118,7 @@ def scrape_repos_licenses(repos_urls: Iterable[URL],
             counter += 1
 
 
-def find_all_license_files(url, package_name):
+def find_all_license_files(url, package_name, output_folder=None):
     if 'github.com' not in url:
         all_links = get_all_links_in_page(url)
         github_links = extract_github_links(all_links)
@@ -129,7 +129,7 @@ def find_all_license_files(url, package_name):
     # print(github_repos)
 
     for license_text, license_path in scrape_repos_licenses(github_repos,
-                                         output_folder='/home/user/Desktop/licenses',
+                                         output_folder=output_folder,
                                          package_name=package_name):
         yield license_text, license_path
 

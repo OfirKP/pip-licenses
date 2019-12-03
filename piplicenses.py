@@ -141,15 +141,17 @@ def get_packages(args):
                 break
 
         else:
-            if getattr(args, 'scrape') and pkg_info is not None:
+            if getattr(args, 'scrape') is not None and pkg_info is not None:
                 field = 'URL'
                 if field.lower() in pkg_info:
                     url = pkg_info[field.lower()]
                 else:
                     url = pkg_info[FIELDS_TO_METADATA_KEYS[field]]
 
+                output_folder = args.scrape if args.scrape else None
                 for license_scraped_text, license_scraped_path in \
-                        find_all_license_files(url, pkg_info['name']):
+                        find_all_license_files(url, pkg_info['name'],
+                                               output_folder=output_folder):
                     license_text = license_scraped_text
                     license_file = license_scraped_path
 
@@ -595,9 +597,11 @@ def create_parser():
                         help='dump with location of license file and '
                              'contents, most useful with JSON output')
     parser.add_argument('-S', '--scrape',
-                        action='store_true',
-                        default=False,
-                        help='Scrape licenses from GitHub if they were not found and')
+                        nargs='?',
+                        default=None,
+                        const='',
+                        help='Scrape licenses from GitHub if they were not found and '
+                             'download them to path')
 
     parser.add_argument('-i', '--ignore-packages',
                         action='store', type=str,

@@ -168,7 +168,10 @@ When executed with the `--with-license-file` option, output the location of the 
 ### Option: scrape
 
 When executed with the `--scrape` option, try to scrape and download license files from GitHub links in the packages provided URLs.
-To view the contents of the license files, this option is best paired with `--with-license-file`.
+Provide a path to a folder if you want to save your scrape licenses there (`--scrape <path>`).
+If not, they won't be saved.
+
+In order to view the contents of the license files, this option is best paired with `--with-license-file`.
 
 ### Option: ignore-packages
 
